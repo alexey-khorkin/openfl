@@ -214,6 +214,7 @@ class Collaborator:
 
         # send the results for this tasks; delta and compression will occur in
         # this function
+        print(global_output_tensor_dict)
         self.send_task_results(global_output_tensor_dict, round_number, task)
 
     def get_numpy_dict_for_tensorkeys(self, tensor_keys):

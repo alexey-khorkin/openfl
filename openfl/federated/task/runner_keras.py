@@ -11,7 +11,6 @@ from warnings import simplefilter
 
 import numpy as np
 
-from openfl.utilities import Metric
 from openfl.utilities import split_tensor_dict_for_holdouts
 from openfl.utilities import TensorKey
 from .runner import TaskRunner
@@ -176,10 +175,10 @@ class KerasTaskRunner(TaskRunner):
         history = self.model.fit(batch_generator,
                                  verbose=1,
                                  **kwargs)
-        results = []
+        results = {}
         for metric in metrics:
             value = np.mean([history.history[metric]])
-            results.append(Metric(name=metric, value=np.array(value)))
+            results[metric] = np.array(value)
         return results
 
     def validate(self, col_name, round_num, input_tensor_dict, **kwargs):

@@ -791,10 +791,10 @@ class Aggregator:
                         f'for round {self.round_number}. Skipping reporting for this round')
                 if agg_function:
                     self.logger.metric(f'Round {round_number}, aggregator: {task_name} '
-                                       f'{agg_function} {agg_tensor_name}:\t{agg_results:.4f}')
+                                       f'{agg_function} {agg_tensor_name}:\t{agg_results}')
                 else:
                     self.logger.metric(f'Round {round_number}, aggregator: {task_name} '
-                                       f'{agg_tensor_name}:\t{agg_results:.4f}')
+                                       f'{agg_tensor_name}:\t{agg_results}')
                 self.log_metric('Aggregator', task_name, tensor_key.tensor_name,
                                 agg_results, round_number)
                 self.metric_queue.put(metric_dict)

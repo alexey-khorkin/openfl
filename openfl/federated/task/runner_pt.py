@@ -4,6 +4,7 @@
 """PyTorchTaskRunner module."""
 
 from copy import deepcopy
+from typing import Dict
 from typing import Iterator
 from typing import Tuple
 
@@ -12,7 +13,6 @@ import torch as pt
 import torch.nn as nn
 import tqdm
 
-from openfl.utilities import Metric
 from openfl.utilities import split_tensor_dict_for_holdouts
 from openfl.utilities import TensorKey
 from .runner import TaskRunner
@@ -153,14 +153,15 @@ class PyTorchTaskRunner(nn.Module, TaskRunner):
         loader = self.data_loader.get_train_loader(num_batches)
         if use_tqdm:
             loader = tqdm.tqdm(loader, desc='train epoch')
-        metric = self.train_epoch(loader)
+        results = self.train_epoch(loader)
         # Output metric tensors (scalar)
         origin = col_name
         tags = ('trained',)
         output_metric_dict = {
             TensorKey(
-                metric.name, origin, round_num, True, ('metric',)
-            ): metric.value
+                metric_name, origin, round_num, True, ('metric',)
+            ): metric_value
+            for metric_name, metric_value in results.items()
         }
 
         # output model tensors (Doesn't include TensorKey)
@@ -439,7 +440,7 @@ class PyTorchTaskRunner(nn.Module, TaskRunner):
         """
         pass
 
-    def train_epoch(self, batch_generator: Iterator[Tuple[np.ndarray, np.ndarray]]) -> Metric:
+    def train_epoch(self, batch_generator: Iterator[Tuple[np.ndarray, np.ndarray]]) -> Dict[str, np.ndarray]:
         """Train single epoch.
 
         Override this function in order to use custom training.
@@ -448,7 +449,7 @@ class PyTorchTaskRunner(nn.Module, TaskRunner):
             batch_generator: Train dataset batch generator. Yields (samples, targets) tuples of
             size = `self.data_loader.batch_size`.
         Returns:
-            Metric: An object containing name and np.ndarray value.
+            Dict[str, np.ndarray]: Dictionary with task results.
         """
         losses = []
         for data, target in batch_generator:
@@ -461,7 +462,7 @@ class PyTorchTaskRunner(nn.Module, TaskRunner):
             self.optimizer.step()
             losses.append(loss.detach().cpu().numpy())
         loss = np.mean(losses)
-        return Metric(name=self.loss_fn.__name__, value=np.array(loss))
+        return {self.loss_fn.__name__: np.array(loss)}
 
 
 def _derive_opt_state_dict(opt_state_dict):
